@@ -9,6 +9,7 @@ function Todo() {
     const [todo, settodo] = useState('');
     const [todos, settodos] = useState([]);
     const [showfinished, setshowfinished] = useState("false");
+    const [editbutton ,seteditbutton]=useState(false);
 
 
     // useEffect(() => {
@@ -32,6 +33,7 @@ function Todo() {
         if (todosall) {
             const newtodos = JSON.parse(todosall);
             settodos(newtodos);
+           
         }
 
     }, []);
@@ -66,19 +68,23 @@ function Todo() {
         settodos(newTodos);
         localStorage.setItem("todos", JSON.stringify(newTodos));
     }
-    const handleedit = (e) => {
-        const id = e.target.name;
-        const index = todos.findIndex((el) => id === el.id);
-
+  
+    const handleEdit = (id) => {
+        if(todo!=""){
+            const confirmdelete = confirm("Input tag are not empty");
+            return ;
+        }
+        const index = todos.findIndex(todo => todo.id === id);
+         seteditbutton(true);
         const newTodos = [...todos];
         const val = newTodos[index].todo;
         newTodos.splice(index, 1);
         settodos(newTodos);
         settodo(val);
         localStorage.setItem("todos", JSON.stringify(newTodos));
-
-    }
-
+        
+    };
+    
     const handledelete = (e) => {
         let id = e.target.value;
         const confirmdelete = confirm("Are you want to delete the todo?");
@@ -97,6 +103,15 @@ function Todo() {
    const handleshow=() => {
       setshowfinished(!showfinished);
    }
+   const handlecancel=(e)=>{
+    const val=todo;
+    const newtodos = [...todos, { id: uuidv4(), todo, iscomplete: false }];
+    settodos(newtodos);
+    settodo('');
+    seteditbutton(false);
+    localStorage.setItem("todos", JSON.stringify(newTodos));
+
+   }
    
 
 
@@ -105,11 +120,30 @@ function Todo() {
         <div className="container bg bg-violet-200 rounded-xl my-5 mx-auto p-5 max-w-lg"> {/* Use max-width for responsiveness */}
             <div className='font-bold text-black  m-auto text-center font-semibold font-serif mb-5 text-xl'><span className='text-red-600'>i</span>Task - Manage your todo at one place </div>
             <div className="heading font-bold mb-4">Add Todo</div>
-            <div className="top w-full flex flex-col md:flex-row justify-around mb-5 border-b-2 border-black pb-5"> {/* Use flex layout */}
-                <input type="text" value={todo} onChange={handleChange} className='border border-black border-2 rounded-md w-full md:w-3/4 mb-2 md:mb-0' placeholder='Enter your Todo here!' /> {/* Adjust width for small screens */}
-                <button onClick={handleAdd}  
-                className='bg-violet-600 hover:bg-violet-900 hover:scale-110 rounded-md text-white py-1 px-2'>Add</button>
-            </div>
+            <div className="top w-full  flex flex-col md:flex-row  justify-between mb-5 border-b-2 border-black pb-5">
+    <input 
+        type="text" 
+        value={todo} 
+        onChange={handleChange} 
+        className='border border-black border-2 rounded-md w-full md:w-3/4 mb-2 mr-2 self-center md:mb-0' 
+        placeholder='Enter your Todo here!' 
+    />
+    <div className="flex flex-col md:flex-row w-5/2 border">
+        <button 
+            onClick={handleAdd} 
+            className={`bg-violet-600 hover:bg-violet-900 hover:scale-110 overflow-hidden rounded-md text-white py-1 px-2 mb-2 md:mb-0 md:mr-2 ${window.innerWidth < 768 ? 'w-full' : 'md:w-auto'}`}
+        >
+            Add
+        </button>
+        {editbutton?<button 
+        onClick={handlecancel}
+            className={`bg-violet-600 hover:bg-violet-900 hover:scale-110 rounded-md text-white py-1 px-2 ${window.innerWidth < 768 ? 'w-full' : ''}`}
+        >
+            Cancel
+        </button>:""}
+    </div>
+</div>
+
 
      <div className="show flex justify-start"  >
      <input type="checkbox"  className="mr-5" onClick={handleshow} checked={showfinished} />
@@ -127,7 +161,8 @@ function Todo() {
                             {el.todo}
                         </div>
                         <div className="todo_button flex items-center"> {/* Use flex layout */}
-                            <button name={el.id} className='bg-violet-600 hover:bg-violet-900 text-white hover:scale-110 p-2 rounded-md mr-2' onClick={handleedit}><FaEdit /></button> {/* Adjust padding for small screens */}
+                        <button name={el.id} className='bg-violet-600 hover:bg-violet-900 text-white hover:scale-110 p-2 rounded-md mr-2' onClick={() => handleEdit(el.id)}><FaEdit /></button>
+ {/* Adjust padding for small screens */}
                             <button name={el.id} className='bg-violet-600 hover:bg-violet-900 text-white hover:scale-110 p-2 rounded-md' onClick={handledelete} >
                             <MdDelete/>
                             </button>
